@@ -8,6 +8,8 @@ A sleek, web-based file manager with dashboard analytics, built with **React + E
 
 - **📊 Dashboard Analytics** — Stat cards with animated counters, file distribution donut chart, drive usage bar chart
 - **📁 File Explorer** — Grid/list views, breadcrumb navigation, context menu, file preview panel
+- **🤖 AI File Assistant** — Chat with an intelligent assistant to search files, list directories, and manage your storage using natural language.
+- **✨ AI Document Summarizer** — Generate instant summaries of text documents and code files in the preview panel.
 - **🔍 Global Search** — Live search with debounced queries and instant navigation
 - **🕐 Recent Files** — Grouped by date (Today, Yesterday, This Week, etc.)
 - **⭐ Favorites** — Bookmark frequently accessed files and folders
@@ -20,7 +22,7 @@ A sleek, web-based file manager with dashboard analytics, built with **React + E
 | Layer | Technology |
 |---|---|
 | Frontend | React 19, Vite, React Router v7, Recharts, Lucide Icons |
-| Backend | Node.js, Express |
+| Backend | Node.js, Express, Google Gen AI SDK (@google/genai) |
 | Styling | Vanilla CSS (dark monochrome design system) |
 
 ## 🚀 Getting Started
@@ -39,6 +41,12 @@ cd filevault
 
 # Install dependencies
 npm install
+```
+
+### Configuration
+Create a `.env` file in the root directory and add your Google Gemini API key to enable the AI features:
+```env
+GEMINI_API_KEY=your_api_key_here
 ```
 
 ### Running
@@ -62,7 +70,8 @@ filevault/
 ├── server/
 │   ├── index.js              # Express entry point (port 3001)
 │   ├── routes/
-│   │   └── files.js          # 16 REST API endpoints
+│   │   ├── files.js          # REST API endpoints for file management
+│   │   └── ai.js             # API endpoints for Gemini AI integration
 │   └── utils/
 │       └── fileHelper.js     # File system utilities
 ├── src/
@@ -70,11 +79,12 @@ filevault/
 │   ├── main.jsx              # React entry point
 │   ├── index.css             # Dark monochrome design system
 │   ├── components/
+│   │   ├── AIAssistant.jsx   # Floating AI Chatbot interface
 │   │   ├── Sidebar.jsx       # Navigation sidebar
 │   │   ├── TopBar.jsx        # Top bar with search
 │   │   ├── StatCard.jsx      # Animated stat card
 │   │   ├── FileCard.jsx      # File/folder card (grid & list)
-│   │   ├── FilePreview.jsx   # File detail panel
+│   │   ├── FilePreview.jsx   # File detail panel (with AI Summarizer)
 │   │   ├── ContextMenu.jsx   # Right-click context menu
 │   │   └── Modal.jsx         # Reusable modal dialog
 │   ├── pages/

@@ -1,11 +1,36 @@
+import { useState } from 'react';
 import { getFileIcon } from '../utils/fileIcons';
 import { formatFullDate, formatBytes } from '../utils/formatters';
-import { X, ExternalLink, Star, Trash2, Copy } from 'lucide-react';
+import { X, ExternalLink, Star, Trash2, Copy, Sparkles, Loader2 } from 'lucide-react';
 
 export default function FilePreview({ file, previewData, onClose, onOpen, onFavorite, onDelete }) {
+  const [summary, setSummary] = useState(null);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+  const [summaryError, setSummaryError] = useState('');
+
   if (!file) return null;
   const iconInfo = getFileIcon(file.category || 'other');
   const Icon = iconInfo.icon;
+
+  const handleGenerateSummary = async () => {
+    if (!previewData?.content) return;
+    setIsLoadingSummary(true);
+    setSummaryError('');
+    try {
+      const res = await fetch('http://localhost:3001/api/ai/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: previewData.content, fileName: file.name })
+      });
+      if (!res.ok) throw new Error('Failed to summarize');
+      const data = await res.json();
+      setSummary(data.summary);
+    } catch (err) {
+      setSummaryError(err.message);
+    } finally {
+      setIsLoadingSummary(false);
+    }
+  };
 
   return (
     <div className="detail-panel">
@@ -16,15 +41,42 @@ export default function FilePreview({ file, previewData, onClose, onOpen, onFavo
 
       <div className="detail-panel-preview">
         {previewData?.type === 'text' ? (
-          <pre style={{
-            fontSize: 11, color: 'var(--text-secondary)',
-            fontFamily: "'JetBrains Mono', monospace",
-            maxHeight: 200, overflow: 'auto', width: '100%',
-            background: 'var(--bg-primary)', borderRadius: 8, padding: 12,
-            whiteSpace: 'pre-wrap', wordBreak: 'break-all',
-          }}>
-            {previewData.content?.substring(0, 2000)}
-          </pre>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
+            {!summary && !isLoadingSummary && (
+              <button 
+                className="btn btn-primary" 
+                style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 8 }}
+                onClick={handleGenerateSummary}
+              >
+                <Sparkles size={16} /> Generate AI Summary
+              </button>
+            )}
+            {isLoadingSummary && (
+              <div style={{ padding: 12, background: 'var(--bg-secondary)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-secondary)', fontSize: 12 }}>
+                <Loader2 size={14} className="spin" /> Generating summary...
+              </div>
+            )}
+            {summaryError && <div style={{ color: 'var(--danger)', fontSize: 12 }}>{summaryError}</div>}
+            {summary && (
+              <div style={{ padding: 12, background: 'rgba(59, 130, 246, 0.1)', border: '1px solid var(--primary)', borderRadius: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--primary)', marginBottom: 8, fontSize: 12, fontWeight: 600 }}>
+                  <Sparkles size={14} /> AI Summary
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  {summary}
+                </div>
+              </div>
+            )}
+            <pre style={{
+              fontSize: 11, color: 'var(--text-secondary)',
+              fontFamily: "'JetBrains Mono', monospace",
+              maxHeight: 200, overflow: 'auto', width: '100%',
+              background: 'var(--bg-primary)', borderRadius: 8, padding: 12,
+              whiteSpace: 'pre-wrap', wordBreak: 'break-all',
+            }}>
+              {previewData.content?.substring(0, 2000)}
+            </pre>
+          </div>
         ) : file.category === 'image' ? (
           <img
             src={`/api/files/preview?path=${encodeURIComponent(file.path)}`}

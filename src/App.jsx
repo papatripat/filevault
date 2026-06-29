@@ -8,6 +8,7 @@ import RecentFiles from './pages/RecentFiles';
 import Favorites from './pages/Favorites';
 import LargeFiles from './pages/LargeFiles';
 import Duplicates from './pages/Duplicates';
+import AIAssistant from './components/AIAssistant';
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -51,6 +52,7 @@ export default function App() {
             } />
           </Routes>
         </div>
+        <AIAssistant />
       </div>
     </BrowserRouter>
   );
